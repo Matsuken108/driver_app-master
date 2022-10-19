@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "77104933129",
+    "firebase_url": "https://uberclonesample-959db-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "uberclonesample-959db",
+    "storage_bucket": "uberclonesample-959db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77104933129:android:fdb2817494897abb51cbd8",
+        "android_client_info": {
+          "package_name": "com.sample.driversapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "77104933129-r7ikikqigv6sfcktuv516hcfa2n8q2s2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkUpn2b725CEuDxZYhfPNx9wOxYogDcMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77104933129-r7ikikqigv6sfcktuv516hcfa2n8q2s2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "77104933129-18bskght05eg4ksumj2vt23629r8fbkv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sample.uberclonesample"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77104933129:android:c10b1d0cfb6a25b851cbd8",
+        "android_client_info": {
+          "package_name": "com.sample.uberclonesample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "77104933129-r7ikikqigv6sfcktuv516hcfa2n8q2s2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkUpn2b725CEuDxZYhfPNx9wOxYogDcMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77104933129-r7ikikqigv6sfcktuv516hcfa2n8q2s2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "77104933129-18bskght05eg4ksumj2vt23629r8fbkv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sample.uberclonesample"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
