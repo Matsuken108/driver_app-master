@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drivers_app/AllScreens/registerationScreen.dart';
 import 'package:drivers_app/configMaps.dart';
 import 'package:drivers_app/main.dart';
 import 'package:flutter/material.dart';
@@ -7,17 +8,30 @@ import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class HomeTabPage extends StatelessWidget {
-  Completer<GoogleMapController> _controllerGoogleMap = Completer();
-  GoogleMapController newGoogleMapController;
-
+class HomeTabPage extends StatefulWidget {
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14.4746,
   );
 
+  @override
+  State<HomeTabPage> createState() => _HomeTabPageState();
+}
+
+class _HomeTabPageState extends State<HomeTabPage> {
+  Completer<GoogleMapController> _controllerGoogleMap = Completer();
+
+  GoogleMapController newGoogleMapController;
+
   Position currentPosition;
+
   var geoLocator = Geolocator();
+
+  String driverStatusText = "Offline Now - Go Online ";
+
+  Color driverStatusColor = Colors.black;
+
+  bool isDriverAvailable = false;
 
   void locatePosition() async {
     Position position = await Geolocator.getCurrentPosition(
@@ -42,7 +56,7 @@ class HomeTabPage extends StatelessWidget {
         GoogleMap(
           mapType: MapType.normal,
           myLocationEnabled: true,
-          initialCameraPosition: _kGooglePlex,
+          initialCameraPosition: HomeTabPage._kGooglePlex,
           myLocationButtonEnabled: true,
           onMapCreated: (GoogleMapController controller) {
             _controllerGoogleMap.complete(controller);
@@ -67,15 +81,37 @@ class HomeTabPage extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: RaisedButton(
                   onPressed: () {
-                    makeDriverOnlineNow();
-                    getLocationLiveUpdates();
+
+                    if(isDriverAvailable != true){
+                      makeDriverOnlineNow();
+                      getLocationLiveUpdates();
+
+                      setState(() {
+                        driverStatusColor = Colors.green;
+                        driverStatusText = "Online Now";
+                        isDriverAvailable = true;
+                      });
+
+                      displayToastMessage("You are Online Now", context);
+
+                    } else {
+                      makeDriverOfflineNow();
+
+                      setState(() {
+                        driverStatusColor = Colors.black;
+                        driverStatusText = "Offline Now - Go Online";
+                        isDriverAvailable = false;
+                      });
+
+                      displayToastMessage("You are Offline Now", context);
+                    }
                   },
-                  color: Colors.green,
+                  color: driverStatusColor,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Offline Now - Go Online ",
+                        driverStatusText,
                         style: TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.bold,
@@ -107,18 +143,27 @@ class HomeTabPage extends StatelessWidget {
     Geofire.setLocation(currentfirebaseUser.uid, currentPosition.latitude, currentPosition.longitude);
 
     rideRequestRef.onValue.listen((event) {
-      
+
     });
   }
-  
+
   void getLocationLiveUpdates(){
-    
-    homeTabPageStreamSubscription = Geolocator.getPositionStream().listen((Position position) { 
+
+    homeTabPageStreamSubscription = Geolocator.getPositionStream().listen((Position position) {
       currentPosition = position;
-      Geofire.setLocation(currentfirebaseUser.uid, position.latitude, position.longitude);
+      if(isDriverAvailable == true){
+        Geofire.setLocation(currentfirebaseUser.uid, position.latitude, position.longitude);
+      }
       LatLng latLng = LatLng(position.latitude, position.longitude);
       newGoogleMapController.animateCamera(CameraUpdate.newLatLng(latLng));
-      
+
     });
+  }
+
+  void makeDriverOfflineNow(){
+    Geofire.removeLocation(currentfirebaseUser.uid);
+    rideRequestRef.onDisconnect();
+    rideRequestRef.remove();
+    rideRequestRef = null;
   }
 }
