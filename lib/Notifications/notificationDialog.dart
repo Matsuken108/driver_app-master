@@ -1,5 +1,9 @@
+import 'package:drivers_app/AllScreens/newRideScreen.dart';
+import 'package:drivers_app/AllScreens/registerationScreen.dart';
 import 'package:drivers_app/Models/rideDetails.dart';
 import 'package:drivers_app/configMaps.dart';
+import 'package:drivers_app/main.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class NotificationDialog extends StatelessWidget {
@@ -135,7 +139,7 @@ class NotificationDialog extends StatelessWidget {
                     ),
                     onPressed: () {
                       assetsAudioPlayer.stop();
-                      
+                      checkAvailabilityOfRide(context);
                     },
                     color: Colors.green,
                     textColor: Colors.white,
@@ -154,5 +158,33 @@ class NotificationDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void checkAvailabilityOfRide(context){
+    rideRequestRef.once().then((DataSnapshot dataSnapshot){
+      Navigator.pop(context);
+      String theRideId = "";
+      if(dataSnapshot.value != null){
+        theRideId = dataSnapshot.value.toString();
+        print("theRideId");
+        print(theRideId);
+      } else {
+        displayToastMessage("Ride not exists", context);
+      }
+
+      if(theRideId == rideDetails.ride_request_id){
+        rideRequestRef.set("accepted");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => NewRideScreen(rideDetails : rideDetails)));
+
+      } else if(theRideId == "cancelled"){
+        displayToastMessage("Ride has been Cancelled", context);
+
+      } else if(theRideId == "timeout"){
+        displayToastMessage("Ride has time out", context);
+
+      } else {
+        displayToastMessage("Ride not exists", context);
+      }
+    });
   }
 }
