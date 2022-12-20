@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:drivers_app/AllScreens/registerationScreen.dart';
+import 'package:drivers_app/Models/drivers.dart';
 import 'package:drivers_app/Notifications/pushNotificationService.dart';
 import 'package:drivers_app/configMaps.dart';
 import 'package:drivers_app/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
@@ -58,6 +60,13 @@ class _HomeTabPageState extends State<HomeTabPage> {
 
   void getCurrentDriverInfo() async {
     currentfirebaseUser = await FirebaseAuth.instance.currentUser;
+
+    driversRef.child(currentfirebaseUser.uid).once().then((DataSnapshot dataSnapShot){
+      if(dataSnapShot.value != null){
+         driversInformation = Drivers.fromSnapshot(dataSnapShot);
+      }
+    });
+
     PushNotificationService pushNotificationService = PushNotificationService();
 
     pushNotificationService.initialize(context);
