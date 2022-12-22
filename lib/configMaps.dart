@@ -16,6 +16,8 @@ User currentfirebaseUser;
 
 StreamSubscription<Position> homeTabPageStreamSubscription;
 
+StreamSubscription<Position> rideStreamSubscription;
+
 final assetsAudioPlayer = AssetsAudioPlayer();
 
 Position currentPosition;

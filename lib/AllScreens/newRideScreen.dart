@@ -5,6 +5,7 @@ import 'package:drivers_app/Models/rideDetails.dart';
 import 'package:drivers_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../Assistants/assistantMethods.dart';
@@ -34,6 +35,9 @@ class _NewRideScreenState extends State<NewRideScreen> {
   List<LatLng> polylineCarOrdinates = [];
   PolylinePoints polylinePoints = PolylinePoints();
   double mapPaddingFromBottom = 0;
+  var locationOptions = LocationOptions(accuracy: LocationAccuracy.bestForNavigation);
+  BitmapDescriptor animatingMarkerIcon;
+  Position myPosition;
 
   @override
   void initState() {
@@ -42,8 +46,43 @@ class _NewRideScreenState extends State<NewRideScreen> {
     acceptRideRequest();
   }
 
+  void createIconMarker(){
+    if(animatingMarkerIcon == null){
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(context, size: Size(2, 2));
+      BitmapDescriptor.fromAssetImage(imageConfiguration, "images/car_ios.png").then((value){
+        animatingMarkerIcon = value;
+      });
+    }
+  }
+
+  void getRideLiveLocationUpdates(){
+    rideStreamSubscription = Geolocator.getPositionStream().listen((Position position) {
+      currentPosition = position;
+      myPosition = position;
+      LatLng mPosition = LatLng(position.latitude, position.longitude);
+
+     Marker animatingMarker = Marker(markerId: MarkerId("animating"),
+       position: mPosition,
+       icon: animatingMarkerIcon,
+       infoWindow: InfoWindow(title: "Current Location"),
+     );
+
+     setState(() {
+       CameraPosition cameraPosition = new CameraPosition(target: mPosition, zoom: 17);
+       newRideGoogleMapController.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+
+       markersSet.removeWhere((marker) => marker.markerId.value == "animating");
+       markersSet.add(animatingMarker);
+     });
+    });
+
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    createIconMarker();
+
     return Scaffold(
       body: Stack(
         children: [
@@ -68,6 +107,8 @@ class _NewRideScreenState extends State<NewRideScreen> {
               var pickUpLatLng = widget.rideDetails.pickup;
 
               await getPlaceDirection(currentLatLng, pickUpLatLng);
+
+              getRideLiveLocationUpdates();
             },
           ),
           
