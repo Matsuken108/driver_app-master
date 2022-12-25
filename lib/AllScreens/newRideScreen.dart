@@ -43,6 +43,10 @@ class _NewRideScreenState extends State<NewRideScreen> {
   String status = "accepted";
   String durationRide = "";
   bool isRequestingDirection = false;
+  String btnTitle = "Arrived";
+  Color btnColor = Colors.blueAccent;
+  Timer timer;
+  int durationCounter = 0;
 
 
   @override
@@ -248,18 +252,45 @@ class _NewRideScreenState extends State<NewRideScreen> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       child: RaisedButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          if(status == "accepted"){
+                            status = "arrived";
+                            String rideRequestId = widget.rideDetails.ride_request_id;
+                            newRequestsRef.child(rideRequestId).child("status").set(status);
 
+                            setState(() {
+                              btnTitle = "Start Trip";
+                              btnColor = Colors.purple;
+                            });
+
+                            showDialog(context: context, barrierDismissible: false, builder: (BuildContext context)=> ProgressDialog(message: "Please wait...",),
+                            );
+
+                            await getPlaceDirection(widget.rideDetails.pickup, widget.rideDetails.dropoff);
+                            Navigator.pop(context);
+
+                          } else  if(status == "arrived"){
+                            status = "onride";
+                            String rideRequestId = widget.rideDetails.ride_request_id;
+                            newRequestsRef.child(rideRequestId).child("status").set(status);
+
+                            setState(() {
+                              btnTitle = "End Trip";
+                              btnColor = Colors.redAccent;
+                            });
+                            initTimer();
+
+                          } else  if(status == "onride"){
+                            endTheTrip();
+                          }
                         },
-                        color: Theme
-                            .of(context)
-                            .accentColor,
+                        color: btnColor,
                         child: Padding(
                           padding: EdgeInsets.all(17.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("Arrived", style: TextStyle(fontSize: 20.0,
+                              Text(btnTitle, style: TextStyle(fontSize: 20.0,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white),
                               ),
@@ -425,12 +456,32 @@ class _NewRideScreenState extends State<NewRideScreen> {
       if(directionDetail != null){
         setState(() {
           durationRide = directionDetail.durationText;
-          
         });
       }
-
       isRequestingDirection = false;
     }
+  }
+
+  void initTimer(){
+    const interval = Duration(seconds: 1);
+    timer = Timer.periodic(interval, (timer) {
+      durationCounter = durationCounter + 1;
+    });
+  }
+
+  endTheTrip() async {
+    timer.cancel();
+    showDialog(context: context, barrierDismissible: false,builder: (BuildContext context)=> ProgressDialog(message: "Please wait..."),
+    );
+
+    var currentLatLng = LatLng(myPosition.latitude, myPosition.longitude);
+    var directionalDetails = await AssistantMethods.obtainDirectionDetails(widget.rideDetails.pickup, currentLatLng);
+    Navigator.pop(context);
+    int fareAmount = AssistantMethods.calculateFares(directionalDetails);
+    String rideRequestId = widget.rideDetails.ride_request_id;
+    newRequestsRef.child(rideRequestId).child("fares").set(fareAmount.toString());
+    newRequestsRef.child(rideRequestId).child("status").set("ended");
+    rideStreamSubscription.cancel();
   }
 }
 
